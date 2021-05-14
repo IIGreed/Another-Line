@@ -38,6 +38,8 @@ var grow = Vector2.ZERO
 
 var last_dir = Vector2.RIGHT
 
+var panel_list :Array
+
 onready var line :Line2D = $Line2D
 onready var tween = $Tween
 
@@ -79,27 +81,40 @@ func get_mouse_axis_pos(x,y):
 	var mouse_axis
 	
 	if last_dir.y == 0:
-		mouse_axis = Vector2( get_global_mouse_position().x, y * dimension + 32 )
+		mouse_axis = Vector2( get_global_mouse_position().x, y * dimension + dimension/2 )
 	else:
-		mouse_axis = Vector2( x * dimension + 32 , get_global_mouse_position().y )
+		mouse_axis = Vector2( x * dimension + dimension/2 , get_global_mouse_position().y )
 	return mouse_axis
 
 func is_next(x, y):
-	""" Returns the direction of line growth, could be used to match the location
-	of the cursor instead of filling the cell.
-	"""
 	if grid[x][y] & PATH:
 		var mouse_axis = get_mouse_axis_pos(x,y)
+
+		for dir in [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]:
+			if path[-1] + dir == Vector2(x, y):
+				last_dir = dir
 		
 		if not (grid[x][y] & OCCUPIED):
-			for dir in [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]:
-				if path[-1] + dir == Vector2(x, y):
-					last_dir = dir
-					return dir
+			return true
+
 		else:
+#			if Vector2(x,y) == path[-2]:
+#				if mouse_axis.is_equal_approx(line.get_point_position( line.get_point_count() - 2)):
+#					printerr("backtrack")
+#				remove_point(x,y)
+			
 			update_point(mouse_axis)
 
 	return false
+
+#func remove_point(x,y):
+#	line.remove_point(line.get_point_count() - 1)
+##	print(path)
+#	path.pop_back()
+#	panel_list[-1].queue_free()
+#	panel_list.pop_back()
+#	grid[x][y] = PATH
+
 
 func update_point(point):
 	line.set_point_position( line.get_point_count() - 1, point )
@@ -116,13 +131,14 @@ func _input(event):
 			if is_next(x, y):
 				grid[x][y] |= OCCUPIED
 				var next_point = Vector2(x, y) * dimension + tile_offset
-				var point_pos = path[-1] * dimension + Vector2(32,32)
+				var point_pos = path[-1] * dimension + Vector2(dimension/2,dimension/2)
 				update_point(point_pos)
 				var mouse_axis = get_mouse_axis_pos(x,y)
 				line.add_point( mouse_axis )
 				
 				#For debugging purposes 
 				var new_panel = panel.instance()
+				panel_list.append(new_panel)
 				new_panel.rect_global_position = point_pos - Vector2(4,4)
 				add_child(new_panel)
 				
