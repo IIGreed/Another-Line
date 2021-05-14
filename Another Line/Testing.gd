@@ -103,11 +103,8 @@ func is_next(x, y):
 
 func update_point(point):
 	line.set_point_position( line.get_point_count() - 1, point )
-	print("update: ",point)
 
 func _input(event):
-	if event.is_action_pressed("ui_accept"):
-		print(grid)
 	if event.is_action("ui_cancel"):
 		get_tree().reload_current_scene()
 	
